@@ -34,6 +34,7 @@
 #define S16_0		-3840
 #define S16_1		3840
 
+
 /* TODO: rename these functions */
 
 /* Open the synthesizer and store audio spec in "spec" (true on error) */

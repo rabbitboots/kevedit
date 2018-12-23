@@ -117,6 +117,47 @@ void SynthPlayNote(SDL_AudioSpec audiospec, musicalNote note, musicSettings sett
 		AddToBuffer(audiospec, 0, spacing);
 }
 
+/*
+#define U8_0		112
+#define U8_1		142
+#define S8_0		-15
+#define S8_1		15
+#define U16_0		28927
+#define U16_1		36607
+#define S16_0		-3840
+#define S16_1		3840
+*/
+
+int synthVol(int sample, int waveformBottom, int waveformTop, int volume, int volumeMax) {
+	int middle = waveformBottom + abs(waveformTop - waveformBottom) / 2;
+	int travel = abs(sample - middle);
+	
+	/* Reject invalid volume parameters / divide-by-zero scenarios */
+	if( volumeMax == 0 || volume < 0 || volume > volumeMax ) {
+		return middle;
+	}
+	float fraction = (float)volume / (float)volumeMax;
+
+	int retval;
+
+	if( sample > middle ) {
+		retval = middle + travel*fraction;
+	}
+	else {
+		retval = middle - travel*fraction;
+	}
+	
+	printf("sample: %d\ntop: %d\nbottom: %d\nmiddle: %d\ntravel: %d\nfraction: %f\nretval: %d\n--------\n", sample, waveformTop, waveformBottom, middle, travel, fraction, retval);
+	
+	return retval;
+	
+/*	int travel = abs(waveformTop - waveformBottom) / 2;
+	float fraction = (float)volume / (float)volumeMax;
+	int retval = middle + ((sample - middle) / fraction);
+	printf("sample: %d\ntop: %d\nbottom: %d\nmiddle: %d\ntravel: %d\nfraction: %f\nretval: %d\n--------\n", sample, waveformTop, waveformBottom, middle, travel, fraction, retval);
+	return retval;*/
+}
+
 void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 {
 	size_t notesize = seconds * spec.freq; /* Bytes of sound */
@@ -125,8 +166,32 @@ void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 
 	int osc = 1;
 
-	Uint16 uon = U16_1, uoff = U16_0;
-	Sint16 son = S16_1, soff = S16_0;
+	int volume = 2, volumeMax = 100;
+	
+	static int findpath = 0;
+
+	Uint8 u8on = synthVol(U8_1, U8_0, U8_1, volume, volumeMax);
+	Uint8 u8off = synthVol(U8_0, U8_0, U8_1, volume, volumeMax);
+	Sint8 s8on = synthVol(S8_1, S8_0, S8_1, volume, volumeMax);
+	Sint8 s8off = synthVol(S8_0, S8_0, S8_1, volume, volumeMax);
+
+	Uint16 uon = synthVol(U16_1, U16_0, U16_1, volume, volumeMax);
+	Uint16 uoff = synthVol(U16_0, U16_0, U16_1, volume, volumeMax);
+	Sint16 son = synthVol(S16_1, S16_0, S16_1, volume, volumeMax);
+	Sint16 soff = synthVol(S16_0, S16_0, S16_1, volume, volumeMax);
+	
+	
+/*
+	Uint8 u8on = U8_1;
+	Uint8 u8off = U8_0;
+	Sint8 s8on = S8_1;
+	Sint8 s8off = S8_0;
+
+	Uint16 uon = U16_1;
+	Uint16 uoff = U16_0;
+	Sint16 son = S16_1;
+	Sint16 soff = S16_0;
+*/
 
 	/* Don't let the callback function access the playbuffer while we're editing it! */
 	SDL_LockAudio();
@@ -172,21 +237,37 @@ void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 				j = 0;
 			}
 			if(spec.format == AUDIO_U8) {
+				if(!findpath) {
+					findpath=1;
+					printf("AUDIO_U8\n");
+				}
 				if(osc)
-					masterplaybuffer[playbuffermax] = U8_1;
+					masterplaybuffer[playbuffermax] = u8on;
 				else
-					masterplaybuffer[playbuffermax] = U8_0;
+					masterplaybuffer[playbuffermax] = u8off;
 			} else if(spec.format == AUDIO_S8) {
+				if(!findpath) {
+					findpath=1;
+					printf("AUDIO_S8\n");
+				}
 				if(osc)
-					masterplaybuffer[playbuffermax] = S8_1;
+					masterplaybuffer[playbuffermax] = s8on;
 				else
-					masterplaybuffer[playbuffermax] = S8_0;
+					masterplaybuffer[playbuffermax] = s8off;
 			} else if(spec.format == AUDIO_U16) {
+				if(!findpath) {
+					findpath=1;
+					printf("AUDIO_U16\n");
+				}
 				if(osc)
 					memcpy(&masterplaybuffer[playbuffermax], &uon, 2);
 				else
 					memcpy(&masterplaybuffer[playbuffermax], &uoff, 2);
 			} else if(spec.format == AUDIO_S16) {
+				if(!findpath) {
+					findpath=1;
+					printf("AUDIO_S16\n");
+				}
 				if(osc)
 					memcpy(&masterplaybuffer[playbuffermax], &son, 2);
 				else
