@@ -143,6 +143,9 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 	editor->selectpos = -1;
 	editor->selectlineoffset = 0;
 
+	/* Volume (SDL only) */
+	editor->editboxVolume = SYNTH_VOLUME_MAX;
+
 	return editor;
 }
 
@@ -409,6 +412,18 @@ int texteditHandleEditKey(texteditor * editor)
 			/* Play music with slight break between notes */
 			texteditZZMPlay(editor, 0);
 			break;
+
+			/* Volume Adjust (SDL only) */
+		#ifdef SDL
+		case DKEY_F11:
+			editor->editboxVolume = synthSetVolume( editor->editboxVolume - 1 );
+			editor->updateflags = TUD_PANEL;
+			break;
+		case DKEY_F12:
+			editor->editboxVolume = synthSetVolume( editor->editboxVolume + 1 );
+			editor->updateflags = TUD_PANEL;
+			break;
+		#endif
 
 		/********* File access operations *********/
 		case DKEY_ALT_O: /* alt+o: open file */

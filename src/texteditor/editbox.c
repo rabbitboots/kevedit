@@ -168,6 +168,7 @@ int editbox(char *title, stringvector * sv, int editwidth, int flags, displaymet
 	static int insertflag = 1;   /* nonzero when in insert mode */
 	static int wrapwidth = 42;   /* where to wrap */
 
+
 	/* if there is no string, add one */
 	if (sv->cur == NULL || sv->first == NULL || sv->last == NULL)
 		pushstring(sv, strcpy((char *) malloc(editwidth + 2), ""));
