@@ -430,6 +430,9 @@ void keveditHandleKeypress(keveditor * myeditor)
 {
 	int next_key = DKEY_NONE;
 
+	/* Variable used for linked board travel */
+	int destBoard = 0;
+
 	/* Act on key pressed */
 	switch (myeditor->key) {
 		case DKEY_NONE:
@@ -501,6 +504,40 @@ void keveditHandleKeypress(keveditor * myeditor)
 			/* Switch to previous board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) - 1);
 
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+			
+		case DKEY_HOME:
+			destBoard = zztBoardGetBoard_n(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+			
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;		
+		case DKEY_END:
+			destBoard = zztBoardGetBoard_s(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+			
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+		case DKEY_F7:
+			destBoard = zztBoardGetBoard_w(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+			
+			
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+		case DKEY_F8:
+			destBoard = zztBoardGetBoard_e(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+			
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
