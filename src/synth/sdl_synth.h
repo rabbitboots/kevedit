@@ -54,7 +54,8 @@ int IsSynthBufferEmpty();
 void SynthPlayNote(SDL_AudioSpec audiospec, musicalNote note, musicSettings settings);
 
 /* Set the synthesizer playback volume. Min: 0, Max: SYNTH_VOLUME_MAX. Returns the new volume setting. */
-int synthSetVolume( int newVolume );
+int synthSetVolume(int newVolume);
+int synthGetVolume(void);
 int synthAdjustSampleVolume(int sample, int waveformBottom, int waveformTop, int volume, int volumeMax);
 
 /* Add a frequency and duration to the SDL audio

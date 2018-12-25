@@ -268,7 +268,6 @@ void texteditDisplayPanel(texteditor * editor)
 
 	#ifdef SDL
 	/* Show synth volume */
-	printf("test test test\n");
 	sprintf(buf, "%d", editor->editboxVolume );
 	editor->d->print(61, 23, YELLOW_F | BRIGHT_F | BLUE_B, buf);
 	#endif

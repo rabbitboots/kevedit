@@ -144,8 +144,31 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 	editor->selectlineoffset = 0;
 
 	/* Volume (SDL only) */
-	editor->editboxVolume = SYNTH_VOLUME_MAX;
-
+	#ifdef SDL
+	static bool volumeInitialized = false;
+	if(!volumeInitialized) {
+		if( getenv("KEVEDIT_SDL_SYNTH_VOLUME") == NULL ) {
+			editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
+		} else {
+			/* TODO Replace atoi() with something like strtol() 
+				Valid range: from 1 to maxvol+1
+				Zero is an error
+			*/
+			int readVolume = atoi( getenv("KEVEDIT_SDL_SYNTH_VOLUME") );
+			if( readVolume > 0 && readVolume < SYNTH_VOLUME_MAX + 1 ) {
+				editor->editboxVolume = synthSetVolume(readVolume - 1);
+			} else {
+				fprintf(stderr, "Error: invalid volume parameter provided. Min: 1, Max: %d, Provided: %d\n",
+						SYNTH_VOLUME_MAX + 1, readVolume);
+				editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
+			}
+		}
+		volumeInitialized = true;
+	} else {
+		editor->editboxVolume = synthGetVolume();
+	}
+	#endif
+	
 	return editor;
 }
 
