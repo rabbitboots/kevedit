@@ -67,7 +67,7 @@ ZZTworld *zztWorldCreate(char *filename, char *title)
 	zztBoardDecompress(&(world->boards[0]));
 
 	/* Initialize blank history */
-	historyReset(&world->history);
+	historyReset(&world->history, 0);
 
 	/* Finished, return the world */
 	return world;
@@ -109,7 +109,7 @@ ZZTworld *zztWorldLoad(char *filename)
 		zztBoardDecompress(&(world->boards[0]));
 		
 		/* Init board history*/
-		historyReset(&world->history);
+		historyReset(&world->history, 0);
 	}
 
 	/* Done */

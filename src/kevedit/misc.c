@@ -493,9 +493,7 @@ ZZTworld * loadworld(displaymethod * mydisplay, ZZTworld * myworld, char *filena
 		zztBoardSelect(myworld, zztWorldGetStartboard(myworld));
 		
 		/* Initialize board history */
-		historyReset(&myworld->history);
-		historySetFirstBoard( &myworld->history, zztWorldGetStartboard(myworld) );
-
+		historyReset(&myworld->history, zztWorldGetStartboard(myworld));
 
 		free(newpath);
 		free(newfile);

@@ -66,7 +66,7 @@ void historyPrint( boardhistory * hist ) {
 	printf("----------------------------------------\n");
 }
 
-void historyReset( boardhistory * hist ) {
+void historyReset( boardhistory * hist, int firstBoardEntry ) {
 	int i = 0;
 	for(i = 0; i < BOARD_HISTORY_MAX; i++ ) {
 		hist->list[i] = 0;
@@ -74,15 +74,20 @@ void historyReset( boardhistory * hist ) {
 	hist->current = 0;
 	hist->max = 0;
 	
+	hist->list[0] = firstBoardEntry;
+
+	/* Set if board history is no longer reliable */
+	hist->unknown = 0;
+
 	historyPrint(hist);
 }
 
-void historySetFirstBoard( boardhistory * hist, int newEntry ) {
-	/* To prevent the title screen from always being history 0 */
-	hist->current = 0;
-	hist->max = 0;
-	hist->list[0] = newEntry;
-	historyPrint(hist);
+void historySetUnknown( boardhistory * hist ) {
+	hist->unknown = 1;
+}
+
+int historyIsUnknown( boardhistory * hist ) {
+	return hist->unknown;
 }
 
 int historyAdd( boardhistory * hist, int newEntry ) {
@@ -151,30 +156,6 @@ int historyGoNext( boardhistory * hist ) {
 	return retval;
 }
 
-
-void historyRemove( boardhistory * hist, int boardNumber ) {
-	int i = 0;
-	for( i = 0; i < BOARD_HISTORY_MAX - 1; i++ ) {
-		if( hist->list[i] == boardNumber ) {
-			hist->list[i] = hist->list[i+1];
-			hist->max--;
-			if( i <= hist->current ) {
-				hist->current--;
-			}
-		}
-	}
-}
-
-void historySwap( boardhistory * hist, int boardA, int boardB ) {
-	int i = 0;
-	for( i = 0; i < BOARD_HISTORY_MAX - 1; i++ ) {
-		if( hist->list[i] == boardA ) {
-			hist->list[i] = boardB;
-		} else if( hist->list[i] == boardB ) {
-			hist->list[i] = boardA;
-		}
-	}
-}
 
 
 int line_editor(int x, int y, int color, char* str, int editwidth, int flags, displaymethod* d)
@@ -984,8 +965,8 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 							boardcount = zztWorldGetBoardcount(w);
 							curboard = (boardcount == src ? src - 1 : src);
 							
-							/* Remove from history buffer */
-							historyRemove(&w->history, src);
+							/* Invalidate history buffer */
+							historySetUnknown(&w->history);
 						}
 					}
 				} else {
@@ -994,7 +975,8 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 					zztWorldMoveBoard(w, src, dest);
 					curboard = dest;
 					
-					historySwap(&w->history, src, dest);
+					/* Invalidate history buffer */
+					historySetUnknown(&w->history);
 				}
 				/* Rebuild the board list */
 				deletestringvector(&boardlist);

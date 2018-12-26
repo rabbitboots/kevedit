@@ -438,6 +438,9 @@ void keveditHandleKeypress(keveditor * myeditor)
 	ZZTtile destTile;
 	ZZTtile landingPassage;
 	int i, j, match;
+	if( historyIsUnknown( &myeditor->myworld->history ) ) {
+		historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+	}
 	
 
 	/* Act on key pressed */
@@ -473,7 +476,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			int result = confirmprompt(myeditor->mydisplay, "Make new world?");
 			if (result == CONFIRM_YES) {
 				myeditor->myworld = clearworld(myeditor->myworld);
-				historyReset(&myeditor->myworld->history);
+				historyReset(&myeditor->myworld->history, 0);
 				
 				myeditor->updateflags |= UD_BOARD;
 			} else if (result == CONFIRM_QUIT) {
@@ -504,7 +507,11 @@ void keveditHandleKeypress(keveditor * myeditor)
 				next_key = DKEY_QUIT;
 			}
 			
-			if( lastBoard != myeditor->myworld->cur_board ) {
+			/* User moved or deleted boards that history is not tracking */
+			if( historyIsUnknown(&myeditor->myworld->history) ) {
+				historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+			else if( lastBoard != myeditor->myworld->cur_board ) {
 				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
 			}
 			
@@ -514,14 +521,29 @@ void keveditHandleKeypress(keveditor * myeditor)
 			break;
 			
 		case DKEY_PAGEDOWN:
+			lastBoard = myeditor->myworld->cur_board;
+
 			/* Switch to next board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) + 1);
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 		case DKEY_PAGEUP:
+			lastBoard = myeditor->myworld->cur_board;
+
 			/* Switch to previous board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) - 1);
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
@@ -530,40 +552,72 @@ void keveditHandleKeypress(keveditor * myeditor)
 		/* 1: ZZTQED "Boardwalk" style travel keys */
 		/* Note: The title screen can link to other boards, but other boards cannot link back */
 		case DKEY_HOME:
+			lastBoard = myeditor->myworld->cur_board;
+
 			destBoard = zztBoardGetBoard_n(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
 			}
 			
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;		
 		case DKEY_END:
+			lastBoard = myeditor->myworld->cur_board;
+
 			destBoard = zztBoardGetBoard_s(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
 			}
-			
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
+
 		case DKEY_F7:
+			lastBoard = myeditor->myworld->cur_board;
+
 			destBoard = zztBoardGetBoard_w(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
-			}			
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
 			
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
+
 		case DKEY_F8:
+			lastBoard = myeditor->myworld->cur_board;
+
 			destBoard = zztBoardGetBoard_e(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
 			}
-			
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 			
 		/* 2: Travel to currently-selected passage destination */
 		case DKEY_F9:
+			lastBoard = myeditor->myworld->cur_board;
+
 			destTile = zztTileGet(myeditor->myworld, myeditor->cursorx, myeditor->cursory);
 			/* ZZT's editor does not allow linking to the title, but KevEdit can produce params
 			that do this. ZZT-OOP is also capable of generating passages that point to the title. */
@@ -600,7 +654,12 @@ void keveditHandleKeypress(keveditor * myeditor)
 					}
 				}
 			}
-			
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 		
@@ -678,6 +737,11 @@ void keveditHandleKeypress(keveditor * myeditor)
 		case 'T':
 			/* Transfer board */
 			next_key = boardtransfer(myeditor->mydisplay, myeditor->myworld);
+
+			/* Reset history buffer when touching this dialog -- efforts to reset
+			   only when a board has been imported have not been successful so far */
+			historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
 		case 'o':
