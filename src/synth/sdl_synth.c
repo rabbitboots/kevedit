@@ -133,6 +133,10 @@ int synthSetVolume( int newVolume ) {
 int synthGetVolume(void) {
 	return synthVolume;
 }
+int synthGetVolumeMax(void) {
+	return SYNTH_VOLUME_MAX;
+}
+
 
 int synthAdjustSampleVolume(int sample, int waveformBottom, int waveformTop, int newVolume, int volumeMax) {
 	int middle = waveformBottom + abs(waveformTop - waveformBottom) / 2;

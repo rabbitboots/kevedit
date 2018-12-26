@@ -147,6 +147,7 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 	#ifdef SDL
 	static bool volumeInitialized = false;
 	if(!volumeInitialized) {
+		editor->editboxVolumeMax = synthGetVolumeMax();
 		if( getenv("KEVEDIT_SDL_SYNTH_VOLUME") == NULL ) {
 			editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
 		} else {
@@ -158,9 +159,8 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 			if( readVolume > 0 && readVolume < SYNTH_VOLUME_MAX + 1 ) {
 				editor->editboxVolume = synthSetVolume(readVolume - 1);
 			} else {
-				fprintf(stderr, "Error: invalid volume parameter provided. Min: 1, Max: %d, Provided: %d\n",
-						SYNTH_VOLUME_MAX + 1, readVolume);
 				editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
+				fprintf(stderr, "Error: invalid volume parameter provided. Min: 1, Max: %d, Provided: %d, Using: %d\n", SYNTH_VOLUME_MAX + 1, readVolume, editor->editboxVolume);
 			}
 		}
 		volumeInitialized = true;

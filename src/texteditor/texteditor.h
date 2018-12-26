@@ -122,6 +122,7 @@ typedef struct {
 	/* Synthesizer volume (SDL only) */
 	#ifdef SDL
 	int editboxVolume;
+	int editboxVolumeMax;
 	#endif
 
 	/** @TODO: Include references to help system, registers, and themes. */

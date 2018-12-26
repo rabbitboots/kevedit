@@ -249,7 +249,8 @@ void texteditDisplaySelection(texteditor * editor)
 
 void texteditDisplayPanel(texteditor * editor)
 {
-	char buf[10] = "";
+	#define TINY_BUFFER 16
+	char buf[TINY_BUFFER] = "";
 
 	/* Only update the panel if necessary. */
 	if (!(editor->updateflags & TUD_PANEL) || !editor->editflag)
@@ -259,7 +260,7 @@ void texteditDisplayPanel(texteditor * editor)
 	
 	editor->d->print(76, 6,  YELLOW_F | BRIGHT_F | BLUE_B, (editor->insertflag ? "on" : "off"));
 
-	sprintf(buf, "%d", editor->wrapwidth);
+	snprintf(buf, TINY_BUFFER - 1, "%d", editor->wrapwidth);
 
 	if (editor->wrapwidth != 0)
 		editor->d->print(76, 8, YELLOW_F | BRIGHT_F | BLUE_B, buf);
@@ -268,8 +269,14 @@ void texteditDisplayPanel(texteditor * editor)
 
 	#ifdef SDL
 	/* Show synth volume */
-	sprintf(buf, "%d", editor->editboxVolume );
-	editor->d->print(61, 23, YELLOW_F | BRIGHT_F | BLUE_B, buf);
+	snprintf(buf, TINY_BUFFER - 1, " f11/f12 " );
+	editor->d->print(61, 23, BLACK_F | YELLOW_B, buf);
+
+	snprintf(buf, TINY_BUFFER - 1, "Volume: " );
+	editor->d->print(63, 24, WHITE_F | BRIGHT_F | BLUE_B, buf);
+
+	snprintf(buf, TINY_BUFFER - 1, "%.2d/%.2d", editor->editboxVolume,  editor->editboxVolumeMax );
+	editor->d->print(71, 24, YELLOW_F | BRIGHT_F | BLUE_B, buf);
 	#endif
 }
 
