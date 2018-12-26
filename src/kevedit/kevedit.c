@@ -308,6 +308,17 @@ void keveditUpdateSelection(keveditor * myeditor)
 
 void keveditHandleTextEntry(keveditor * myeditor)
 {
+	/* Option to use the background color instead of foreground, if the
+	   current fg color is black, white, light-grey or dark-grey. */
+	static int colorUseBGifFGisWhite = -1;
+	if(colorUseBGifFGisWhite == -1) {
+		if( getenv("KEVEDIT_TEXT_COLOR_USE_BG_IF_FG_IS_WHITE") != NULL ) {
+			colorUseBGifFGisWhite = 1;
+		} else {
+		colorUseBGifFGisWhite = 0;
+		}
+	}
+
 	int key = myeditor->key;
 
 	if (myeditor->textentrymode == 0)
@@ -339,9 +350,19 @@ void keveditHandleTextEntry(keveditor * myeditor)
 		/* Insert the current keystroke as text */
 		ZZTtile textTile = { ZZT_BLUETEXT, 0x00, NULL };
 
-		/* Determine the text code based on the FG colour */
-		if (myeditor->color.fg == 0 || myeditor->color.fg == 8 || myeditor->color.fg == 15)
-			textTile.type += 6;
+		/* Determine the text code based on the FG or BG colour */
+		/* (0: Black, 7: Light-Grey, 8: Dark-Grey, 15: White) */
+		int fcol = myeditor->color.fg;
+		int bcol = myeditor->color.bg;
+
+		if (fcol == 0 || fcol == 7 || fcol == 8 || fcol == 15) {
+			if(!colorUseBGifFGisWhite || bcol == 0 || bcol == 7 ) {
+				textTile.type = ZZT_WHITETEXT;
+			} else {
+				/* If specified by user, use background color when foreground is black / grey / white */
+				textTile.type += myeditor->color.bg - 1;
+			}
+		}
 		else if (myeditor->color.fg > 8)
 			textTile.type += myeditor->color.fg - 9;
 		else
