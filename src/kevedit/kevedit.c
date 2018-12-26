@@ -430,8 +430,13 @@ void keveditHandleKeypress(keveditor * myeditor)
 {
 	int next_key = DKEY_NONE;
 
-	/* Variable used for linked board travel */
+	/* Variables used for linked board travel */
+	/* TODO move this junk to its own set of functions */
 	int destBoard = 0;
+	ZZTtile destTile;
+	ZZTtile landingPassage;
+	int i, j, match;
+	
 
 	/* Act on key pressed */
 	switch (myeditor->key) {
@@ -494,6 +499,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			}
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
+			
 		case DKEY_PAGEDOWN:
 			/* Switch to next board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) + 1);
@@ -506,7 +512,10 @@ void keveditHandleKeypress(keveditor * myeditor)
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
-			
+
+		/* Extended Travel proof of concept */
+		/* 1: ZZTQED "Boardwalk" style travel keys */
+		/* Note: The title screen can link to other boards, but other boards cannot link back */
 		case DKEY_HOME:
 			destBoard = zztBoardGetBoard_n(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
@@ -527,8 +536,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			destBoard = zztBoardGetBoard_w(myeditor->myworld);
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
-			}
-			
+			}			
 			
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
@@ -540,6 +548,51 @@ void keveditHandleKeypress(keveditor * myeditor)
 			
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
+			
+		/* 2: Travel to currently-selected passage destination */
+		case DKEY_F9:
+			destTile = zztTileGet(myeditor->myworld, myeditor->cursorx, myeditor->cursory);
+			/* ZZT's editor does not allow linking to the title, but KevEdit can produce params
+			that do this. ZZT-OOP is also capable of generating passages that point to the title. */
+
+			if( destTile.type == ZZT_PASSAGE) {
+				if( destTile.param != NULL ) {
+					destBoard = destTile.param->data[2];
+				} else {
+				/* Statless passage -- no param pointer to dereference. this passage goes to the title screen */
+					destBoard = 0;
+				}
+				if( destBoard >= 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+					zztBoardSelect(myeditor->myworld, destBoard );
+
+					/* If there is a matching passage color on the destination board, reposition the 
+					cursor at the first such occurrence, checking from bottom to top, right to left. */
+					match = 0;
+					for( i = ZZT_BOARD_X_SIZE; i >= 0; i-- ) {
+						for( j = ZZT_BOARD_Y_SIZE; j >= 0; j-- ) {
+							if(!match) {
+								landingPassage = zztTileGet(myeditor->myworld, i, j);
+								if( landingPassage.type == ZZT_PASSAGE && destTile.color == landingPassage.color ) {
+									myeditor->cursorx = i;
+									myeditor->cursory = j;
+									match = 1;
+								}
+							}
+						}
+					}
+					/* If no matching passage, place cursor on player */
+					if(!match) {
+						myeditor->cursorx = zztBoardGetCurPtr(myeditor->myworld)->plx;
+						myeditor->cursory = zztBoardGetCurPtr(myeditor->myworld)->ply;
+					}
+				}
+			}
+			
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+		
+		
+		/* 3: Step back and forward through visited board history */
 
 		case 'i':
 		case 'I':
