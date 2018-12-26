@@ -157,6 +157,14 @@ typedef struct ZZTboard {
 	int plx, ply;         /* Player x and y */
 } ZZTboard;
 
+/* Board history buffer */
+typedef struct boardhistory {
+	#define BOARD_HISTORY_MAX 5
+	int list[BOARD_HISTORY_MAX];
+	int current;
+	int max;
+} boardhistory;
+
 /* ZZT world info -- stuff from the ZZT file header */
 typedef struct ZZTworldinfo {
 	uint16_t boardcount;	/* Boards in world */
@@ -185,6 +193,9 @@ typedef struct ZZTworld {
 	ZZTboard *boards;	/* Array of boards */
 	int cur_board;		/* Board we are accessing */
 	char *filename;		/* Filename */
+
+	/* List of previously-viewed boards */
+	boardhistory history;
 } ZZTworld;
 
 /*****************************************************************/

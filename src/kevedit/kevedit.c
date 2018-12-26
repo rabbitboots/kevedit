@@ -68,6 +68,7 @@ void keveditHandleKeypress(keveditor * myeditor);
 /* Handle movement keys */
 void keveditHandleMovement(keveditor * myeditor);
 
+
 keveditor * createkeveditor(ZZTworld * myworld, displaymethod * mydisplay, char * datapath)
 {
 	keveditor * myeditor;
@@ -433,6 +434,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 	/* Variables used for linked board travel */
 	/* TODO move this junk to its own set of functions */
 	int destBoard = 0;
+	int lastBoard = 0;
 	ZZTtile destTile;
 	ZZTtile landingPassage;
 	int i, j, match;
@@ -471,6 +473,8 @@ void keveditHandleKeypress(keveditor * myeditor)
 			int result = confirmprompt(myeditor->mydisplay, "Make new world?");
 			if (result == CONFIRM_YES) {
 				myeditor->myworld = clearworld(myeditor->myworld);
+				historyReset(&myeditor->myworld->history);
+				
 				myeditor->updateflags |= UD_BOARD;
 			} else if (result == CONFIRM_QUIT) {
 				next_key = DKEY_QUIT;
@@ -494,9 +498,18 @@ void keveditHandleKeypress(keveditor * myeditor)
 		}
 		case 'b':
 		case 'B':
+			lastBoard = myeditor->myworld->cur_board;
+			
 			if(switchboard(myeditor->myworld, myeditor->mydisplay) == DKEY_QUIT) {
 				next_key = DKEY_QUIT;
 			}
+			
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+			
+			printf("\n@@ %d @@ %d\n", lastBoard, myeditor->myworld->cur_board );
+			
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
 			
@@ -557,7 +570,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 
 			if( destTile.type == ZZT_PASSAGE) {
 				if( destTile.param != NULL ) {
-					destBoard = destTile.param->data[2];
+					destBoard = destTile.param->data[zztParamDatauseLocate(ZZT_DATAUSE_PASSAGEDEST)];
 				} else {
 				/* Statless passage -- no param pointer to dereference. this passage goes to the title screen */
 					destBoard = 0;
@@ -593,6 +606,25 @@ void keveditHandleKeypress(keveditor * myeditor)
 		
 		
 		/* 3: Step back and forward through visited board history */
+		
+		case DKEY_F10:
+			destBoard = historyGoPrev( &myeditor->myworld->history );
+			if( destBoard != -1 ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		case DKEY_F11:
+			destBoard = historyGoNext( &myeditor->myworld->history );
+
+			if( destBoard != -1 ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;		
+			break;
 
 		case 'i':
 		case 'I':
@@ -638,6 +670,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			if(quit) {
 				next_key = DKEY_QUIT;
 			}
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE | UD_WORLDTITLE;
 			break;
 		}
