@@ -61,6 +61,19 @@ void copy(keveditor * myeditor)
 		if (myeditor->copyBlock != NULL)
 			zztBlockFree(myeditor->copyBlock);
 
+		static int doNotCopyPlayer = -1;
+		if(doNotCopyPlayer == -1) {
+			if( getenv("KEVEDIT_DO_NOT_COPY_STAT_ZERO_PLAYER") != NULL ) {
+				doNotCopyPlayer = 1;
+			} else {
+				doNotCopyPlayer = 0;
+			}
+		}
+		if(doNotCopyPlayer == 1) {
+			ZZTboard * board = &myeditor->myworld->boards[zztBoardGetCurrent(myeditor->myworld)];
+			unselectpos(myeditor->selCurrent, board->plx, board->ply);
+		}
+
 		myeditor->copyBlock = zztBlockDuplicate(zztBoardGetBlock(myeditor->myworld));
 		copyselection(myeditor->copySelection, myeditor->selCurrent);
 
