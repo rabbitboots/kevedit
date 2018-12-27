@@ -105,7 +105,7 @@ char* filenamedialog(char* initname, char* extension, char* prompt,
 
 
 /* board dialogs */
-int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, displaymethod * mydisplay);
+int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, displaymethod * mydisplay, bool allowReorganize );
 int switchboard(ZZTworld * w, displaymethod * mydisplay);
 char *titledialog(char* prompt, displaymethod * d, bool *quit);
 

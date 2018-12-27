@@ -551,7 +551,7 @@ int parameditoption(displaymethod * d, ZZTworld * w, int x, int y, dialogCompone
 				return DKEY_QUIT;
 			return 2;
 		case ZZT_DATAUSE_PASSAGEDEST: {
-			int result = boarddialog(w, tile.param->data[2], "Passage Destination", 0, d);
+			int result = boarddialog(w, tile.param->data[2], "Passage Destination", 0, d, false);
 			if (result == DKEY_QUIT)
 				return DKEY_QUIT;
 			tile.param->data[2] = result;

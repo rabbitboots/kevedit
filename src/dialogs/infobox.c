@@ -304,7 +304,7 @@ int boardinfoeditoption(displaymethod * d, ZZTworld* myworld, dialogComponent* o
 			break;
 
 		case BRDINFO_BRDNORTH: {
-			int board = boarddialog(myworld, zztBoardGetBoard_n(myworld), "Board to the North", 1, d);
+			int board = boarddialog(myworld, zztBoardGetBoard_n(myworld), "Board to the North", 1, d, false);
 			if(board == DKEY_QUIT) {
 				return UPDATE_QUIT;
 			} else {
@@ -314,7 +314,7 @@ int boardinfoeditoption(displaymethod * d, ZZTworld* myworld, dialogComponent* o
 		}
 
 		case BRDINFO_BRDSOUTH:{
-			int board = boarddialog(myworld, zztBoardGetBoard_s(myworld), "Board to the North", 1, d);
+			int board = boarddialog(myworld, zztBoardGetBoard_s(myworld), "Board to the South", 1, d, false);
 			if(board == DKEY_QUIT) {
 				return UPDATE_QUIT;
 			} else {
@@ -324,7 +324,7 @@ int boardinfoeditoption(displaymethod * d, ZZTworld* myworld, dialogComponent* o
 		}
 
 		case BRDINFO_BRDEAST:{
-			int board = boarddialog(myworld, zztBoardGetBoard_e(myworld), "Board to the North", 1, d);
+			int board = boarddialog(myworld, zztBoardGetBoard_e(myworld), "Board to the East", 1, d, false);
 			if(board == DKEY_QUIT) {
 				return UPDATE_QUIT;
 			} else {
@@ -334,7 +334,7 @@ int boardinfoeditoption(displaymethod * d, ZZTworld* myworld, dialogComponent* o
 		}
 
 		case BRDINFO_BRDWEST:{
-			int board = boarddialog(myworld, zztBoardGetBoard_w(myworld), "Board to the North", 1, d);
+			int board = boarddialog(myworld, zztBoardGetBoard_w(myworld), "Board to the West", 1, d, false);
 			if(board == DKEY_QUIT) {
 				return UPDATE_QUIT;
 			} else {
