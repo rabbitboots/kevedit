@@ -22,6 +22,8 @@
 #ifndef TEXTEDITOR_TEXTEDITOR_H
 #define TEXTEDITOR_TEXTEDITOR_H
 
+#include <errno.h>
+
 #include "libzzt2/zzt.h"
 #include "display/display.h"
 #include "structures/svector.h"

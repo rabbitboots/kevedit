@@ -151,16 +151,15 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 		if( getenv("KEVEDIT_SDL_SYNTH_VOLUME") == NULL ) {
 			editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
 		} else {
-			/* TODO Replace atoi() with something like strtol() 
-				Valid range: from 1 to maxvol+1
-				Zero is an error
-			*/
-			int readVolume = atoi( getenv("KEVEDIT_SDL_SYNTH_VOLUME") );
-			if( readVolume > 0 && readVolume < SYNTH_VOLUME_MAX + 1 ) {
-				editor->editboxVolume = synthSetVolume(readVolume - 1);
+			/* Valid range: from 0 to SYNTH_VOLUME_MAX */
+			char * end = NULL;
+			errno = 0;
+			long readVolume = strtol( getenv("KEVEDIT_SDL_SYNTH_VOLUME"), &end, 0 );
+			if( errno == 0 && readVolume >= 0 && readVolume <= SYNTH_VOLUME_MAX ) {
+				editor->editboxVolume = synthSetVolume(readVolume);
 			} else {
 				editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
-				fprintf(stderr, "Error: invalid volume parameter provided. Min: 1, Max: %d, Provided: %d, Using: %d\n", SYNTH_VOLUME_MAX + 1, readVolume, editor->editboxVolume);
+				fprintf(stderr, "Error: Couldn't read synthesizer volume provided. Min: 0, Max: %d, Provided: %d, errno: %d, Using: %d\n", SYNTH_VOLUME_MAX, readVolume, editor->editboxVolume);
 			}
 		}
 		volumeInitialized = true;
