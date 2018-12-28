@@ -551,7 +551,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 		/* Extended Travel proof of concept */
 		/* 1: ZZTQED "Boardwalk" style travel keys */
 		/* Note: The title screen can link to other boards, but other boards cannot link back */
-		case DKEY_HOME:
+		case 'l':
 			lastBoard = myeditor->myworld->cur_board;
 
 			destBoard = zztBoardGetBoard_n(myeditor->myworld);
@@ -566,7 +566,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;		
-		case DKEY_END:
+		case '.':
 			lastBoard = myeditor->myworld->cur_board;
 
 			destBoard = zztBoardGetBoard_s(myeditor->myworld);
@@ -582,7 +582,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
-		case DKEY_F7:
+		case ',':
 			lastBoard = myeditor->myworld->cur_board;
 
 			destBoard = zztBoardGetBoard_w(myeditor->myworld);
@@ -598,7 +598,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
-		case DKEY_F8:
+		case '/':
 			lastBoard = myeditor->myworld->cur_board;
 
 			destBoard = zztBoardGetBoard_e(myeditor->myworld);
@@ -615,7 +615,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			break;
 			
 		/* 2: Travel to currently-selected passage destination */
-		case DKEY_F9:
+		case '\'':
 			lastBoard = myeditor->myworld->cur_board;
 
 			destTile = zztTileGet(myeditor->myworld, myeditor->cursorx, myeditor->cursory);
@@ -666,7 +666,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 		
 		/* 3: Step back and forward through visited board history */
 		
-		case DKEY_F10:
+		case '[':
 			destBoard = historyGoPrev( &myeditor->myworld->history );
 			if( destBoard != -1 ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
@@ -675,7 +675,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
-		case DKEY_F11:
+		case ']':
 			destBoard = historyGoNext( &myeditor->myworld->history );
 
 			if( destBoard != -1 ) {
@@ -721,7 +721,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			next_key = saveworld(myeditor->mydisplay, myeditor->myworld);
 			myeditor->updateflags |= UD_ALL | UD_WORLDTITLE;
 			break;
-		case 'l':
+		/*case 'l':*/
 		case 'L': {
 			/* Load world */
 			bool quit = false;
@@ -910,7 +910,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 				myeditor->updateflags |= UD_PATTERNS;
 			}
 			break;
-		case '/':
+		case '?':
 			/* Toggle backbuffer push locking */
 			if (myeditor->buffers.backbuffer->lock == PATBUF_UNLOCK)
 				myeditor->buffers.backbuffer->lock = PATBUF_NOPUSH;
