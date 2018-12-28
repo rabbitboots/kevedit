@@ -22,6 +22,8 @@
 #ifndef TEXTEDITOR_TEXTEDITOR_H
 #define TEXTEDITOR_TEXTEDITOR_H
 
+#include <errno.h>
+
 #include "libzzt2/zzt.h"
 #include "display/display.h"
 #include "structures/svector.h"
@@ -118,6 +120,12 @@ typedef struct {
 	int selectflag;        /**< True when an area is being selected. */
 	int selectpos;         /**< Cursor position of selection start. */
 	int selectlineoffset;  /**< Offset of selection start from current line. */
+
+	#ifdef SDL
+	/* Synthesizer volume (SDL only) */
+	int editboxVolume;
+	int editboxVolumeMax;
+	#endif
 
 	/** @TODO: Include references to help system, registers, and themes. */
 

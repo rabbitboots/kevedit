@@ -33,6 +33,8 @@
 Uint8 *masterplaybuffer = NULL;
 static size_t playbuffersize = 0, playbufferloc = 0, playbuffermax = 0;
 
+static int synthVolume = SYNTH_VOLUME_MAX;
+
 int OpenSynth(SDL_AudioSpec * spec)
 {
 	SDL_AudioSpec desired, obtained;
@@ -117,6 +119,46 @@ void SynthPlayNote(SDL_AudioSpec audiospec, musicalNote note, musicSettings sett
 		AddToBuffer(audiospec, 0, spacing);
 }
 
+int synthSetVolume( int newVolume ) {
+	if( newVolume < 0 ) {
+		synthVolume = 0;
+	} else if( newVolume > SYNTH_VOLUME_MAX ) {
+		synthVolume = SYNTH_VOLUME_MAX;
+	} else {
+		synthVolume = newVolume;
+	}
+
+	return synthVolume;
+}
+int synthGetVolume(void) {
+	return synthVolume;
+}
+int synthGetVolumeMax(void) {
+	return SYNTH_VOLUME_MAX;
+}
+
+int synthAdjustSampleVolume(int sample, int waveformBottom, int waveformTop, int newVolume, int volumeMax) {
+	int middle = waveformBottom + abs(waveformTop - waveformBottom) / 2;
+	int travel = abs(sample - middle);
+
+	/* Reject invalid volume parameters */
+	if( volumeMax == 0 || newVolume < 0 || newVolume > volumeMax ) {
+		return middle;
+	}
+	float fraction = (float)newVolume / (float)volumeMax;
+
+	int retval;
+
+	if( sample > middle ) {
+		retval = middle + travel*fraction;
+	}
+	else {
+		retval = middle - travel*fraction;
+	}
+
+	return retval;
+}
+
 void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 {
 	size_t notesize = seconds * spec.freq; /* Bytes of sound */
@@ -125,8 +167,17 @@ void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 
 	int osc = 1;
 
-	Uint16 uon = U16_1, uoff = U16_0;
-	Sint16 son = S16_1, soff = S16_0;
+	/* Adjust amplitude */
+
+	Uint8 u8on  = synthAdjustSampleVolume(U8_1, U8_0, U8_1, synthVolume, SYNTH_VOLUME_MAX);
+	Uint8 u8off = synthAdjustSampleVolume(U8_0, U8_0, U8_1, synthVolume, SYNTH_VOLUME_MAX);
+	Sint8 s8on  = synthAdjustSampleVolume(S8_1, S8_0, S8_1, synthVolume, SYNTH_VOLUME_MAX);
+	Sint8 s8off = synthAdjustSampleVolume(S8_0, S8_0, S8_1, synthVolume, SYNTH_VOLUME_MAX);
+
+	Uint16 uon  = synthAdjustSampleVolume(U16_1, U16_0, U16_1, synthVolume, SYNTH_VOLUME_MAX);
+	Uint16 uoff = synthAdjustSampleVolume(U16_0, U16_0, U16_1, synthVolume, SYNTH_VOLUME_MAX);
+	Sint16 son  = synthAdjustSampleVolume(S16_1, S16_0, S16_1, synthVolume, SYNTH_VOLUME_MAX);
+	Sint16 soff = synthAdjustSampleVolume(S16_0, S16_0, S16_1, synthVolume, SYNTH_VOLUME_MAX);
 
 	/* Don't let the callback function access the playbuffer while we're editing it! */
 	SDL_LockAudio();
@@ -173,14 +224,14 @@ void AddToBuffer(SDL_AudioSpec spec, float freq, float seconds)
 			}
 			if(spec.format == AUDIO_U8) {
 				if(osc)
-					masterplaybuffer[playbuffermax] = U8_1;
+					masterplaybuffer[playbuffermax] = u8on;
 				else
-					masterplaybuffer[playbuffermax] = U8_0;
+					masterplaybuffer[playbuffermax] = u8off;
 			} else if(spec.format == AUDIO_S8) {
 				if(osc)
-					masterplaybuffer[playbuffermax] = S8_1;
+					masterplaybuffer[playbuffermax] = s8on;
 				else
-					masterplaybuffer[playbuffermax] = S8_0;
+					masterplaybuffer[playbuffermax] = s8off;
 			} else if(spec.format == AUDIO_U16) {
 				if(osc)
 					memcpy(&masterplaybuffer[playbuffermax], &uon, 2);

@@ -34,6 +34,9 @@
 #define S16_0		-3840
 #define S16_1		3840
 
+/* Max volume setting */
+#define SYNTH_VOLUME_MAX 15
+
 /* TODO: rename these functions */
 
 /* Open the synthesizer and store audio spec in "spec" (true on error) */
@@ -47,6 +50,15 @@ int IsSynthBufferEmpty();
 
 /* Play a note on to the SDL synthesizer */
 void SynthPlayNote(SDL_AudioSpec audiospec, musicalNote note, musicSettings settings);
+
+/* Set the synthesizer playback volume. Min: 0, Max: SYNTH_VOLUME_MAX.
+ * Returns new volume (which could be different). */
+int synthSetVolume(int newVolume);
+int synthGetVolume(void);
+int synthGetVolumeMax(void);
+
+/* Adjust amplitude of square wave samples before sending to buffer */
+int synthAdjustSampleVolume(int sample, int waveformBottom, int waveformTop, int volume, int volumeMax);
 
 /* Add a frequency and duration to the SDL audio
  * buffer */

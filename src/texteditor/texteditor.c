@@ -143,6 +143,32 @@ texteditor * createtexteditor(char * title, stringvector * text, displaymethod *
 	editor->selectpos = -1;
 	editor->selectlineoffset = 0;
 
+	#ifdef SDL
+	/* Volume (SDL only) */
+	static bool volumeInitialized = false;
+	if(!volumeInitialized) {
+		if( getenv("KEVEDIT_SDL_SYNTH_VOLUME") == NULL ) {
+			editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
+		} else {
+			/* Valid range: from 0 to SYNTH_VOLUME_MAX */
+			char * end = NULL;
+			errno = 0;
+			long readVolume = strtol( getenv("KEVEDIT_SDL_SYNTH_VOLUME"), &end, 0 );
+			if( errno == 0 && readVolume >= 0 && readVolume <= SYNTH_VOLUME_MAX ) {
+				editor->editboxVolume = synthSetVolume(readVolume);
+			} else {
+				editor->editboxVolume = synthSetVolume(SYNTH_VOLUME_MAX);
+				editor->editboxVolumeMax = SYNTH_VOLUME_MAX;
+				fprintf(stderr, "Error: Couldn't read synthesizer volume provided. Min: 0, Max: %d, Provided: %d, errno: %d, Using: %d\n", SYNTH_VOLUME_MAX, readVolume, editor->editboxVolume);
+			}
+		}
+		volumeInitialized = true;
+	}
+
+	editor->editboxVolume = synthGetVolume();
+	editor->editboxVolumeMax = SYNTH_VOLUME_MAX;
+	#endif
+
 	return editor;
 }
 
@@ -409,6 +435,18 @@ int texteditHandleEditKey(texteditor * editor)
 			/* Play music with slight break between notes */
 			texteditZZMPlay(editor, 0);
 			break;
+
+			/* Volume Adjust (SDL only) */
+		#ifdef SDL
+		case DKEY_ALT_DOWN:
+			editor->editboxVolume = synthSetVolume( editor->editboxVolume - 1 );
+			editor->updateflags = TUD_PANEL;
+			break;
+		case DKEY_ALT_UP:
+			editor->editboxVolume = synthSetVolume( editor->editboxVolume + 1 );
+			editor->updateflags = TUD_PANEL;
+			break;
+		#endif
 
 		/********* File access operations *********/
 		case DKEY_ALT_O: /* alt+o: open file */
