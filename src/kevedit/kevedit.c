@@ -441,7 +441,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 	if( historyIsUnknown( &myeditor->myworld->history ) ) {
 		historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
 	}
-	
+
 
 	/* Act on key pressed */
 	switch (myeditor->key) {
@@ -477,7 +477,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			if (result == CONFIRM_YES) {
 				myeditor->myworld = clearworld(myeditor->myworld);
 				historyReset(&myeditor->myworld->history, 0);
-				
+
 				myeditor->updateflags |= UD_BOARD;
 			} else if (result == CONFIRM_QUIT) {
 				next_key = DKEY_QUIT;
@@ -502,11 +502,11 @@ void keveditHandleKeypress(keveditor * myeditor)
 		case 'b':
 		case 'B':
 			lastBoard = myeditor->myworld->cur_board;
-			
+
 			if(switchboard(myeditor->myworld, myeditor->mydisplay) == DKEY_QUIT) {
 				next_key = DKEY_QUIT;
 			}
-			
+
 			/* User moved or deleted boards that history is not tracking */
 			if( historyIsUnknown(&myeditor->myworld->history) ) {
 				historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
@@ -514,12 +514,10 @@ void keveditHandleKeypress(keveditor * myeditor)
 			else if( lastBoard != myeditor->myworld->cur_board ) {
 				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
 			}
-			
-			printf("\n@@ %d @@ %d\n", lastBoard, myeditor->myworld->cur_board );
-			
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
-			
+
 		case DKEY_PAGEDOWN:
 			lastBoard = myeditor->myworld->cur_board;
 
@@ -558,7 +556,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
 				zztBoardSelect(myeditor->myworld, destBoard );
 			}
-			
+
 			/* If visiting new board, add to history */
 			if( lastBoard != myeditor->myworld->cur_board ) {
 				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
@@ -594,7 +592,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			if( lastBoard != myeditor->myworld->cur_board ) {
 				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
 			}
-			
+
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
@@ -613,7 +611,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
-			
+
 		/* 2: Travel to currently-selected passage destination */
 		case '\'':
 			lastBoard = myeditor->myworld->cur_board;
@@ -662,10 +660,10 @@ void keveditHandleKeypress(keveditor * myeditor)
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
-		
-		
+
+
 		/* 3: Step back and forward through visited board history */
-		
+
 		case '[':
 			destBoard = historyGoPrev( &myeditor->myworld->history );
 			if( destBoard != -1 ) {
@@ -682,7 +680,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 				zztBoardSelect(myeditor->myworld, destBoard );
 			}
 
-			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;		
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 
 		case 'i':
@@ -1091,5 +1089,69 @@ void keveditHandleMovement(keveditor * myeditor)
 		} while (repeat > 0);
 
 		myeditor->updateflags |= UD_PATTERNS | UD_OBJCOUNT | UD_SPOT;
+	}
+}
+
+void historyReset( boardhistory * hist, int firstBoardEntry ) {
+	int i = 0;
+	for(i = 0; i < BOARD_HISTORY_MAX; i++ ) {
+		hist->list[i] = 0;
+	}
+
+	hist->current = 0;
+	hist->max = 0;
+	hist->list[0] = firstBoardEntry;
+	hist->unknown = 0; /* Flag if board history is no longer reliable */
+}
+
+void historySetUnknown( boardhistory * hist ) {
+	hist->unknown = 1;
+}
+
+int historyIsUnknown( boardhistory * hist ) {
+	return hist->unknown;
+}
+
+int historyAdd( boardhistory * hist, int newEntry ) {
+	int i = 0;
+
+	if( hist->current > BOARD_HISTORY_MAX || hist->current < 0 ) {
+		return -1;
+	}
+
+	/* History is full: discard oldest item and shift all back */
+	if( hist->current + 1 > BOARD_HISTORY_MAX - 1 ) {
+		for( i = 0; i < BOARD_HISTORY_MAX - 1; i++ ) {
+			hist->list[i] = hist->list[i + 1];
+		}
+		hist->current--;
+	}
+
+	hist->current++;
+	hist->list[hist->current] = newEntry;
+
+	/* Discard forward history */
+	hist->max = hist->current;
+
+	return 0;
+}
+
+int historyGoPrev( boardhistory * hist ) {
+	if( hist->current > 0 ) {
+		hist->current--;
+		return hist->list[hist->current];
+	}
+	else {
+		return -1;
+	}
+}
+
+int historyGoNext( boardhistory * hist ) {
+	if( hist->current < hist->max && hist->current < BOARD_HISTORY_MAX ) {
+		hist->current++;
+		return hist->list[hist->current];
+	}
+	else {
+		return -1;
 	}
 }

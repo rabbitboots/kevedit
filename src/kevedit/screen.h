@@ -123,14 +123,4 @@ int colorselector(displaymethod * d, textcolor * color);
 /* confirmprompt() - Asks a yes/no question */
 int confirmprompt(displaymethod * mydisplay, char * prompt);
 
-/* Board view history */
-void historyReset(boardhistory * hist, int firstBoardEntry);
-void historySetUnknown( boardhistory * hist );
-int historyIsUnknown( boardhistory * hist );
-void historySetFirstBoard( boardhistory * hist, int newEntry );
-int historyAdd( boardhistory * hist, int newEntry );
-int historyGoPrev( boardhistory * hist );
-int historyGoNext( boardhistory * hist );
-
-
 #endif				/* _SCREEN_H */

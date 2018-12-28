@@ -191,7 +191,7 @@ ZZTparam *zztParamCreate(ZZTtile tile)
 		int datause = profile.datause[i];
 		param->data[i] = _zzt_datause_default_table[datause];
 	}
-	
+
 	/* Default object cycle override */
 	if(tile.type == ZZT_OBJECT ) {
 		static int objectCycleOverrideInit = 0;

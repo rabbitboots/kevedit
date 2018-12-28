@@ -106,6 +106,9 @@ int main(int argc, char **argv)
 	/* Switch to the start board */
 	zztBoardSelect(myworld, zztWorldGetStartboard(myworld));
 
+	/* Re-init board history to set starting point to starting board */
+	historyReset(&myworld->history, zztWorldGetStartboard(myworld));
+
 	/* Create the editor */
 	editor = createkeveditor(myworld, mydisplay, datapath);
 

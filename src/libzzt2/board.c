@@ -285,7 +285,6 @@ int _zzt_board_limit_links(ZZTboard *brd, int max)
 	return 1;
 }
 
-
 /* Functions present in zzt.h */
 
 ZZTboard *zztBoardCreate(char *title)

@@ -107,7 +107,7 @@ ZZTworld *zztWorldLoad(char *filename)
 		/* Decompress the current/first board */
 		world->cur_board = 0;
 		zztBoardDecompress(&(world->boards[0]));
-		
+
 		/* Init board history*/
 		historyReset(&world->history, 0);
 	}

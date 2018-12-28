@@ -51,113 +51,6 @@
 #define BBSCROLLSTART 7
 #define BBVWIDTH      10
 
-
-/* Board viewing history functions */
-
-void historyPrint( boardhistory * hist ) {
-	int i = 0;
-	printf("----------------------------------------\n");
-	printf(" ** BOARD HISTORY INFO ** \ncurrent: %d\nmax: %d\nBOARD_HISTORY_MAX: %d\n", hist->current, hist->max, BOARD_HISTORY_MAX );
-	printf("----------------------------------------\n");
-	for(i = 0; i < hist->max + 1; i++ ) {
-		printf("%d: %d\t", i, hist->list[i]);
-	}
-	printf("\n");
-	printf("----------------------------------------\n");
-}
-
-void historyReset( boardhistory * hist, int firstBoardEntry ) {
-	int i = 0;
-	for(i = 0; i < BOARD_HISTORY_MAX; i++ ) {
-		hist->list[i] = 0;
-	}
-	hist->current = 0;
-	hist->max = 0;
-	
-	hist->list[0] = firstBoardEntry;
-
-	/* Set if board history is no longer reliable */
-	hist->unknown = 0;
-
-	historyPrint(hist);
-}
-
-void historySetUnknown( boardhistory * hist ) {
-	hist->unknown = 1;
-}
-
-int historyIsUnknown( boardhistory * hist ) {
-	return hist->unknown;
-}
-
-int historyAdd( boardhistory * hist, int newEntry ) {
-	if( hist->current > BOARD_HISTORY_MAX || hist->current < 0 ) {
-		printf("hist->current out of range (%d)\n", hist->current );
-		return -1;
-	}
-
-	/* History is full: discard oldest item and shift all back */
-	if( hist->current + 1 > BOARD_HISTORY_MAX - 1 ) {
-		printf("History full.\n");
-		int i = 0;
-		for( i = 0; i < BOARD_HISTORY_MAX - 1; i++ ) {
-			printf("Slot %d was %d, changed to %d.\n", i, hist->list[i], hist->list[i+1] );
-			hist->list[i] = hist->list[i + 1];
-		}
-		hist->current--;
-	}
-	
-	printf("\nPREV HIST->CURRENT: %d\n", hist->current );
-	hist->current++;
-	printf("\nNEW  HIST->CURRENT: %d\n", hist->current );
-
-	printf("\nOLD  HIST->LIST[HIST->CURRENT]: %d\n", hist->list[hist->current] );
-	hist->list[hist->current] = newEntry;
-	printf("\nNEW  HIST->LIST[HIST->CURRENT]: %d\n", hist->list[hist->current] );
-	
-	/* Discard forward history */
-	hist->max = hist->current;
-
-	// debug
-	historyPrint(hist);
-
-}
-
-int historyGoPrev( boardhistory * hist ) {
-	int retval = -1;
-	if( hist->current > 0 ) {
-		hist->current--;
-		retval = hist->list[hist->current];
-	} else {
-		retval = -1;
-	}
-	
-	// debug
-	historyPrint(hist);
-	
-	return retval;
-}
-
-int historyGoNext( boardhistory * hist ) {
-	int retval = -1;
-	if( hist->current < hist->max && hist->current < BOARD_HISTORY_MAX ) {
-		printf("\nPREV HIST->CURRENT: %d\n", hist->current );
-		hist->current++;
-		printf("\nNEW  HIST->CURRENT: %d\n", hist->current );
-
-		retval = hist->list[hist->current];
-	} else {
-		retval = -1;
-	}
-	
-	// debug
-	historyPrint(hist);
-	
-	return retval;
-}
-
-
-
 int line_editor(int x, int y, int color, char* str, int editwidth, int flags, displaymethod* d)
 {
 	int pos = strlen(str);   /* Position in str */
@@ -964,7 +857,7 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 						if (zztWorldDeleteBoard(w, src, 1)) {
 							boardcount = zztWorldGetBoardcount(w);
 							curboard = (boardcount == src ? src - 1 : src);
-							
+
 							/* Invalidate history buffer */
 							historySetUnknown(&w->history);
 						}
@@ -974,7 +867,7 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 					int dest = src + (response == EDITBOX_FORWARD ? 1 : -1);
 					zztWorldMoveBoard(w, src, dest);
 					curboard = dest;
-					
+
 					/* Invalidate history buffer */
 					historySetUnknown(&w->history);
 				}
