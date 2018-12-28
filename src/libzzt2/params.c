@@ -184,7 +184,31 @@ ZZTparam *zztParamCreate(ZZTtile tile)
 	if (profile.properties & ZZT_PROPERTY_STEP)
 		param->ystep = -1;  /* North by default */
 
-	param->cycle = profile.cycledefault;
+	/* User cycle setting for newly-minted objects */
+	static int defaultObjectCycleOverride = -1;
+	static int objCycle = 3;
+	if(defaultObjectCycleOverride == -1 ) {
+		if( getenv("KEVEDIT_OBJECT_DEFAULT_CYCLE") == NULL ) {
+			defaultObjectCycleOverride = 0;
+		} else {
+			objCycle = atoi( getenv("KEVEDIT_OBJECT_DEFAULT_CYCLE") );
+			if( objCycle < 1 || objCycle > 255 ) {
+				defaultObjectCycleOverride = 0;
+				fprintf(stderr, "Error: Could not read object cycle override. Defaulting to 3.\n" );
+			} else {
+				defaultObjectCycleOverride = 1;
+			}
+		}
+	}
+	if(tile.type == ZZT_OBJECT) {
+		if(!defaultObjectCycleOverride) {
+			param->cycle = profile.cycledefault;
+		} else {
+			param->cycle = objCycle;
+		}
+	} else {
+		param->cycle = profile.cycledefault;
+	}
 
 	/* Consider each data[] element */
 	for (i = 0; i < 3; i++) {
