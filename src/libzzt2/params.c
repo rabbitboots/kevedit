@@ -192,27 +192,6 @@ ZZTparam *zztParamCreate(ZZTtile tile)
 		param->data[i] = _zzt_datause_default_table[datause];
 	}
 
-	/* Default object cycle override */
-	if(tile.type == ZZT_OBJECT ) {
-		static int objectCycleOverrideInit = 0;
-		static int objectCycleOverride = 3;
-		if(!objectCycleOverrideInit) {
-			if( getenv("KEVEDIT_OBJECT_DEFAULT_CYCLE") != NULL ) {
-				/* TODO replace atoi(). For now, treat 0 as error as a
-				 * cycle 0 object is effectively useless. */
-				int readCycle = atoi( getenv("KEVEDIT_OBJECT_DEFAULT_CYCLE") );
-				if( readCycle > 0 && readCycle <= 255 ) {
-					objectCycleOverride = readCycle;
-				} else {
-					fprintf( stderr, "Error: invalid object cycle override provided. Min: 1, Max: 255, Provided: %d. Using: %d\n",
-								readCycle, objectCycleOverride);
-				}
-			}
-			objectCycleOverrideInit = 1;
-		}
-		param->cycle = objectCycleOverride;
-	}
-
 	return param;
 }
 
