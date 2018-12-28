@@ -153,9 +153,18 @@ typedef struct ZZTboard {
 	uint8_t *packed;			/* RLE packed board data */
 	ZZTparam *params;			/* Array of parameters */
 	ZZTblock *bigboard;   /* Data & params when unpacked */
-
 	int plx, ply;         /* Player x and y */
 } ZZTboard;
+
+/* Board history buffer */
+typedef struct boardhistory {
+	#define BOARD_HISTORY_MAX 100
+	int list[BOARD_HISTORY_MAX];
+	int current;
+	int max;
+
+	int unknown; /* Buffer is no longer synced to layout */
+} boardhistory;
 
 /* ZZT world info -- stuff from the ZZT file header */
 typedef struct ZZTworldinfo {
@@ -185,6 +194,9 @@ typedef struct ZZTworld {
 	ZZTboard *boards;	/* Array of boards */
 	int cur_board;		/* Board we are accessing */
 	char *filename;		/* Filename */
+
+	/* List of previously-viewed boards */
+	boardhistory history;
 } ZZTworld;
 
 /*****************************************************************/

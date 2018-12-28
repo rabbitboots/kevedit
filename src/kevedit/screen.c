@@ -859,6 +859,9 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 						if (zztWorldDeleteBoard(w, src, 1)) {
 							boardcount = zztWorldGetBoardcount(w);
 							curboard = (boardcount == src ? src - 1 : src);
+
+							/* Invalidate history buffer */
+							historySetUnknown(&w->history);
 						}
 					}
 				} else {
@@ -866,6 +869,9 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 					int dest = src + (response == EDITBOX_FORWARD ? 1 : -1);
 					zztWorldMoveBoard(w, src, dest);
 					curboard = dest;
+
+					/* Invalidate history buffer */
+					historySetUnknown(&w->history);
 				}
 				/* Rebuild the board list */
 				deletestringvector(&boardlist);

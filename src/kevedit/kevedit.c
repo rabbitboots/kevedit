@@ -68,6 +68,7 @@ void keveditHandleKeypress(keveditor * myeditor);
 /* Handle movement keys */
 void keveditHandleMovement(keveditor * myeditor);
 
+
 keveditor * createkeveditor(ZZTworld * myworld, displaymethod * mydisplay, char * datapath)
 {
 	keveditor * myeditor;
@@ -451,6 +452,18 @@ void keveditHandleKeypress(keveditor * myeditor)
 {
 	int next_key = DKEY_NONE;
 
+	/* Variables used for linked board travel */
+	/* TODO move this junk to its own set of functions */
+	int destBoard = 0;
+	int lastBoard = 0;
+	ZZTtile destTile;
+	ZZTtile landingPassage;
+	int i, j, match;
+	if( historyIsUnknown( &myeditor->myworld->history ) ) {
+		historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+	}
+
+
 	/* Act on key pressed */
 	switch (myeditor->key) {
 		case DKEY_NONE:
@@ -484,6 +497,8 @@ void keveditHandleKeypress(keveditor * myeditor)
 			int result = confirmprompt(myeditor->mydisplay, "Make new world?");
 			if (result == CONFIRM_YES) {
 				myeditor->myworld = clearworld(myeditor->myworld);
+				historyReset(&myeditor->myworld->history, 0);
+
 				myeditor->updateflags |= UD_BOARD;
 			} else if (result == CONFIRM_QUIT) {
 				next_key = DKEY_QUIT;
@@ -507,20 +522,184 @@ void keveditHandleKeypress(keveditor * myeditor)
 		}
 		case 'b':
 		case 'B':
+			lastBoard = myeditor->myworld->cur_board;
+
 			if(switchboard(myeditor->myworld, myeditor->mydisplay) == DKEY_QUIT) {
 				next_key = DKEY_QUIT;
 			}
+
+			/* User moved or deleted boards that history is not tracking */
+			if( historyIsUnknown(&myeditor->myworld->history) ) {
+				historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+			else if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
+
 		case DKEY_PAGEDOWN:
+			lastBoard = myeditor->myworld->cur_board;
+
 			/* Switch to next board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) + 1);
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
 		case DKEY_PAGEUP:
+			lastBoard = myeditor->myworld->cur_board;
+
 			/* Switch to previous board (bounds checking is automatic) */
 			zztBoardSelect(myeditor->myworld, zztBoardGetCurrent(myeditor->myworld) - 1);
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		/* Extended Travel proof of concept */
+		/* 1: ZZTQED "Boardwalk" style travel keys */
+		/* Note: The title screen can link to other boards, but other boards cannot link back */
+		case 'l':
+			lastBoard = myeditor->myworld->cur_board;
+
+			destBoard = zztBoardGetBoard_n(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+		case '.':
+			lastBoard = myeditor->myworld->cur_board;
+
+			destBoard = zztBoardGetBoard_s(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		case ',':
+			lastBoard = myeditor->myworld->cur_board;
+
+			destBoard = zztBoardGetBoard_w(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		case '/':
+			lastBoard = myeditor->myworld->cur_board;
+
+			destBoard = zztBoardGetBoard_e(myeditor->myworld);
+			if( destBoard > 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		/* 2: Travel to currently-selected passage destination */
+		case '\'':
+			lastBoard = myeditor->myworld->cur_board;
+
+			destTile = zztTileGet(myeditor->myworld, myeditor->cursorx, myeditor->cursory);
+			/* ZZT's editor does not allow linking to the title, but KevEdit can produce params
+			that do this. ZZT-OOP is also capable of generating passages that point to the title. */
+
+			if( destTile.type == ZZT_PASSAGE) {
+				if( destTile.param != NULL ) {
+					destBoard = destTile.param->data[zztParamDatauseLocate(ZZT_DATAUSE_PASSAGEDEST)];
+				} else {
+				/* Statless passage -- no param pointer to dereference. this passage goes to the title screen */
+					destBoard = 0;
+				}
+				if( destBoard >= 0 && destBoard < zztWorldGetBoardcount(myeditor->myworld) ) {
+					zztBoardSelect(myeditor->myworld, destBoard );
+
+					/* If there is a matching passage color on the destination board, reposition the 
+					cursor at the first such occurrence, checking from bottom to top, right to left. */
+					match = 0;
+					for( i = ZZT_BOARD_X_SIZE; i >= 0; i-- ) {
+						for( j = ZZT_BOARD_Y_SIZE; j >= 0; j-- ) {
+							if(!match) {
+								landingPassage = zztTileGet(myeditor->myworld, i, j);
+								if( landingPassage.type == ZZT_PASSAGE && destTile.color == landingPassage.color ) {
+									myeditor->cursorx = i;
+									myeditor->cursory = j;
+									match = 1;
+								}
+							}
+						}
+					}
+					/* If no matching passage, place cursor on player */
+					if(!match) {
+						myeditor->cursorx = zztBoardGetCurPtr(myeditor->myworld)->plx;
+						myeditor->cursory = zztBoardGetCurPtr(myeditor->myworld)->ply;
+					}
+				}
+			}
+
+			/* If visiting new board, add to history */
+			if( lastBoard != myeditor->myworld->cur_board ) {
+				historyAdd( &myeditor->myworld->history, myeditor->myworld->cur_board );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+
+		/* 3: Step back and forward through visited board history */
+
+		case '[':
+			destBoard = historyGoPrev( &myeditor->myworld->history );
+			if( destBoard != -1 ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
+
+			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
+			break;
+
+		case ']':
+			destBoard = historyGoNext( &myeditor->myworld->history );
+
+			if( destBoard != -1 ) {
+				zztBoardSelect(myeditor->myworld, destBoard );
+			}
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
 			break;
@@ -561,7 +740,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			next_key = saveworld(myeditor->mydisplay, myeditor->myworld);
 			myeditor->updateflags |= UD_ALL | UD_WORLDTITLE;
 			break;
-		case 'l':
+		/*case 'l':*/
 		case 'L': {
 			/* Load world */
 			bool quit = false;
@@ -569,6 +748,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			if(quit) {
 				next_key = DKEY_QUIT;
 			}
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE | UD_WORLDTITLE;
 			break;
 		}
@@ -576,6 +756,11 @@ void keveditHandleKeypress(keveditor * myeditor)
 		case 'T':
 			/* Transfer board */
 			next_key = boardtransfer(myeditor->mydisplay, myeditor->myworld);
+
+			/* Reset history buffer when touching this dialog -- efforts to reset
+			   only when a board has been imported have not been successful so far */
+			historyReset( &myeditor->myworld->history, myeditor->myworld->cur_board );
+
 			myeditor->updateflags |= UD_ALL | UD_BOARDTITLE;
 			break;
 		case 'o':
@@ -744,7 +929,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 				myeditor->updateflags |= UD_PATTERNS;
 			}
 			break;
-		case '/':
+		case '?':
 			/* Toggle backbuffer push locking */
 			if (myeditor->buffers.backbuffer->lock == PATBUF_UNLOCK)
 				myeditor->buffers.backbuffer->lock = PATBUF_NOPUSH;
@@ -925,5 +1110,69 @@ void keveditHandleMovement(keveditor * myeditor)
 		} while (repeat > 0);
 
 		myeditor->updateflags |= UD_PATTERNS | UD_OBJCOUNT | UD_SPOT;
+	}
+}
+
+void historyReset( boardhistory * hist, int firstBoardEntry ) {
+	int i = 0;
+	for(i = 0; i < BOARD_HISTORY_MAX; i++ ) {
+		hist->list[i] = 0;
+	}
+
+	hist->current = 0;
+	hist->max = 0;
+	hist->list[0] = firstBoardEntry;
+	hist->unknown = 0; /* Flag if board history is no longer reliable */
+}
+
+void historySetUnknown( boardhistory * hist ) {
+	hist->unknown = 1;
+}
+
+int historyIsUnknown( boardhistory * hist ) {
+	return hist->unknown;
+}
+
+int historyAdd( boardhistory * hist, int newEntry ) {
+	int i = 0;
+
+	if( hist->current > BOARD_HISTORY_MAX || hist->current < 0 ) {
+		return -1;
+	}
+
+	/* History is full: discard oldest item and shift all back */
+	if( hist->current + 1 > BOARD_HISTORY_MAX - 1 ) {
+		for( i = 0; i < BOARD_HISTORY_MAX - 1; i++ ) {
+			hist->list[i] = hist->list[i + 1];
+		}
+		hist->current--;
+	}
+
+	hist->current++;
+	hist->list[hist->current] = newEntry;
+
+	/* Discard forward history */
+	hist->max = hist->current;
+
+	return 0;
+}
+
+int historyGoPrev( boardhistory * hist ) {
+	if( hist->current > 0 ) {
+		hist->current--;
+		return hist->list[hist->current];
+	}
+	else {
+		return -1;
+	}
+}
+
+int historyGoNext( boardhistory * hist ) {
+	if( hist->current < hist->max && hist->current < BOARD_HISTORY_MAX ) {
+		hist->current++;
+		return hist->list[hist->current];
+	}
+	else {
+		return -1;
 	}
 }

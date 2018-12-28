@@ -127,5 +127,13 @@ void kevedit(keveditor * myeditor);
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
+/* Board view history */
+void historyReset(boardhistory * hist, int firstBoardEntry);
+void historySetUnknown( boardhistory * hist );
+int historyIsUnknown( boardhistory * hist );
+int historyAdd( boardhistory * hist, int newEntry );
+int historyGoPrev( boardhistory * hist );
+int historyGoNext( boardhistory * hist );
+
 #endif				/* _KEVEDIT_H */
 
