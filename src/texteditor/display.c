@@ -249,7 +249,7 @@ void texteditDisplaySelection(texteditor * editor)
 
 void texteditDisplayPanel(texteditor * editor)
 {
-	#define TINY_BUFFER 16
+	#define TINY_BUFFER 20
 	char buf[TINY_BUFFER] = "";
 
 	/* Only update the panel if necessary. */
@@ -261,6 +261,7 @@ void texteditDisplayPanel(texteditor * editor)
 	editor->d->print(76, 6,  YELLOW_F | BRIGHT_F | BLUE_B, (editor->insertflag ? "on" : "off"));
 
 	snprintf(buf, TINY_BUFFER - 1, "%d", editor->wrapwidth);
+	buf[TINY_BUFFER - 1] = '\0';
 
 	if (editor->wrapwidth != 0)
 		editor->d->print(76, 8, YELLOW_F | BRIGHT_F | BLUE_B, buf);
@@ -268,14 +269,17 @@ void texteditDisplayPanel(texteditor * editor)
 		editor->d->print(72, 8, YELLOW_F | BRIGHT_F | BLUE_B, "off");
 
 	#ifdef SDL
-	/* Show synth volume */
-	snprintf(buf, TINY_BUFFER - 1, " f11/f12 " );
+	/* Print synth volume and hotkey info on top of the side panel */
+	snprintf(buf, TINY_BUFFER - 1, " Alt+\x18/\x19 " );
+	buf[TINY_BUFFER - 1] = '\0';
 	editor->d->print(61, 23, BLACK_F | YELLOW_B, buf);
 
 	snprintf(buf, TINY_BUFFER - 1, "Volume: " );
+	buf[TINY_BUFFER - 1] = '\0';
 	editor->d->print(63, 24, WHITE_F | BRIGHT_F | BLUE_B, buf);
 
 	snprintf(buf, TINY_BUFFER - 1, "%.2d/%.2d", editor->editboxVolume,  editor->editboxVolumeMax );
+	buf[TINY_BUFFER - 1] = '\0';
 	editor->d->print(71, 24, YELLOW_F | BRIGHT_F | BLUE_B, buf);
 	#endif
 }

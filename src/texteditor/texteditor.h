@@ -121,8 +121,8 @@ typedef struct {
 	int selectpos;         /**< Cursor position of selection start. */
 	int selectlineoffset;  /**< Offset of selection start from current line. */
 
-	/* Synthesizer volume (SDL only) */
 	#ifdef SDL
+	/* Synthesizer volume (SDL only) */
 	int editboxVolume;
 	int editboxVolumeMax;
 	#endif

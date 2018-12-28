@@ -137,11 +137,10 @@ int synthGetVolumeMax(void) {
 	return SYNTH_VOLUME_MAX;
 }
 
-
 int synthAdjustSampleVolume(int sample, int waveformBottom, int waveformTop, int newVolume, int volumeMax) {
 	int middle = waveformBottom + abs(waveformTop - waveformBottom) / 2;
 	int travel = abs(sample - middle);
-	
+
 	/* Reject invalid volume parameters */
 	if( volumeMax == 0 || newVolume < 0 || newVolume > volumeMax ) {
 		return middle;
