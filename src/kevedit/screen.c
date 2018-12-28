@@ -816,7 +816,7 @@ stringvector buildboardlist(ZZTworld * w, int firstnone)
 	return boardlist;
 }
 
-int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, displaymethod * mydisplay)
+int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, displaymethod * mydisplay, bool allowReorganize )
 {
 	stringvector boardlist;
 	int boardcount = zztWorldGetBoardcount(w);
@@ -841,10 +841,12 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 			drawsidepanel(mydisplay, PANEL_BOARD_DIALOG);
 		}
 
-		if (response == EDITBOX_FORWARD ||  /* Move board forward */
-				response == EDITBOX_BACKWARD ||     /* Move board backward */
-				response == EDITBOX_BACK) { /* Delete board */
+		if (allowReorganize == true &&           /* Prevent chaos in Passage Destination and Edge Link selectors */
+				(response == EDITBOX_FORWARD ||  /* Move board forward */
+				response == EDITBOX_BACKWARD ||  /* Move board backward */
+				response == EDITBOX_BACK)) {     /* Delete board */
 			/* Reorganize the boards!!!! */
+
 			int src = svgetposition(&boardlist);
 
 			if (src != boardcount &&
@@ -894,7 +896,7 @@ int boarddialog(ZZTworld * w, int curboard, char * title, int firstnone, display
 
 int switchboard(ZZTworld * w, displaymethod * mydisplay)
 {
-	int newboard = boarddialog(w, zztBoardGetCurrent(w), "Switch Boards", 0, mydisplay);
+	int newboard = boarddialog(w, zztBoardGetCurrent(w), "Switch Boards", 0, mydisplay, true);
     if(newboard == DKEY_QUIT) {
         return DKEY_QUIT;
     }
