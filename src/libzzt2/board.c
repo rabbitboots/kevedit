@@ -292,6 +292,19 @@ ZZTboard *zztBoardCreate(char *title)
 	int blocks, remainder, ofs;
 	int i;
 
+	static int makeBlank = -1;
+	/* -1: Uninitialized, check on first function call
+    0: Draw with yellow borders and centered player
+    1: Draw blank board */
+
+	if( makeBlank == -1 ) {
+		if(getenv("KEVEDIT_NEW_BOARD_YELLOW_BORDERS") == NULL ) {
+			makeBlank = 1;
+		} else {
+			makeBlank = 0;
+		}
+	}
+
 	/* Create new board */
 	ZZTboard *board = malloc(sizeof(ZZTboard));
 	memset(&board->info, 0, sizeof(ZZTboardinfo));
@@ -318,8 +331,27 @@ ZZTboard *zztBoardCreate(char *title)
 	memset(board->params, 0, sizeof(ZZTparam));
 	board->params->cycle = 1;
 	board->info.paramcount = 1;
-	/* Player position: (0, 0) */
-	board->plx = board->ply = 0;
+	/* Player position. Blank: 0,0. With border: 29,11 */
+	if(makeBlank) {
+		board->plx = board->ply = 0;
+	} else {
+		board->plx = 29;
+		board->ply = 11;
+	}
+
+	if(!makeBlank) {
+		/* Wrap playfield area in fashionable yellow-hued perimeter */
+		zztBoardDecompress(board);
+
+		for( i = 0; i < ZZT_BOARD_MAX_SIZE; i++ ) {
+			if( i % ZZT_BOARD_X_SIZE == 0 || i % ZZT_BOARD_X_SIZE == ZZT_BOARD_X_SIZE - 1 || i / ZZT_BOARD_X_SIZE == 0 || i / ZZT_BOARD_X_SIZE == ZZT_BOARD_Y_SIZE - 1 ) {
+				board->bigboard->tiles[i].type = ZZT_NORMAL;
+				board->bigboard->tiles[i].color = 0x0e;
+			}
+		}
+		board->bigboard->tiles[board->plx + (board->ply*ZZT_BOARD_X_SIZE)].type = ZZT_PLAYER;
+		zztBoardCompress(board);
+	}
 
 	return board;
 }
