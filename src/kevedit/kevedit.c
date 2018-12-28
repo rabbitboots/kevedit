@@ -563,7 +563,7 @@ void keveditHandleKeypress(keveditor * myeditor)
 			}
 
 			myeditor->updateflags |= UD_BOARD | UD_OBJCOUNT | UD_BOARDTITLE;
-			break;		
+			break;
 		case '.':
 			lastBoard = myeditor->myworld->cur_board;
 
